@@ -51,9 +51,6 @@ def get_diffList(diffList):
     diffList = [(int(x*scale+START_X), int(y*scale+START_Y)) for x,y in diffList]
     return diffList
 
-
-
-
 def is_click_on_diff(mouseX, mouseY, diffList):
     '''
     click on any different area, return True
@@ -93,15 +90,14 @@ def load_image(name):
     return img
 
 
+againHelp = 1
+
 ## GATE 0.5
 # setup 
 gate = 0.5
 diffList = [(0,0)]
 set_bg_color(screen, GRAY)
-screen.blit(next, (CENTER_X, CENTER_Y))
-
-
- 
+screen.blit(next, (CENTER_X, CENTER_Y)) 
 # loop
 while gate==0.5:
 
@@ -118,9 +114,6 @@ while gate==0.5:
                 gate = 1
                 break   
     pygame.display.update()
-
-
-
 
 ## GATE 1 
 if gate==1 :
@@ -144,6 +137,7 @@ if gate==1 :
 
     # time left
     start_time = 5
+
     # loop
     while gate==1:
         ## some animate, like score, time.
@@ -186,17 +180,44 @@ if gate==1 :
         clock.tick(frame_rate)              
         pygame.display.update()
 
+        if total_seconds == 0:
+            clock_sound.stop()
+            #screen.fill((255,255,255,0))
+            text = '时间用完啦, 要重来一次嘛？'
+            output_text(text, screen, (CENTER_X, CENTER_Y))
+            pygame.display.update()
+        
+            for e in pygame.event.get():
+                if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
+                    gate=0
+                    break
+                elif e.type == pygame.MOUSEBUTTONDOWN:
+                    mouseX, mouseY = e.pos
+                    if(is_click_on_diff(mouseX, mouseY, [(0,0)])):
+                        # go back to beginning
+                        frame_count = 0
+                        # add image again
+                        set_bg_color(screen, GRAY)
+                        screen.blit(before, (BEFORE_X, PIC_HEIGHT))
+                        screen.blit(after, (START_X, START_Y)) 
+                        pygame.display.update()
+                        #bg music
+                        clock_sound = pygame.mixer.Sound('clock.wav')
+                        clock_sound.play(-1) 
+                        break
+                    else:
+                        game = 0
+                        break
+            againHelp -= 1
 
     clock_sound.stop()
 
-
-
 ## GATE 1.5
-
+#set up
 set_bg_color(screen, GRAY)
 screen.blit(next, (0,0))
 diffList = [(0,0)]
-
+#loop
 while gate==1.5:
     fontObj = pygame.font.Font('freesansbold.ttf', 32)
     textSurfaceObj = fontObj.render('You Find them! next gate...', True, GREEN, BLUE)
@@ -214,8 +235,8 @@ while gate==1.5:
                 gate=2
     pygame.display.update()
 
-
 ## GATE 2
+
 if gate==2 :
     # setup
     current_score = 0
