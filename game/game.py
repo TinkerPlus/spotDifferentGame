@@ -92,212 +92,156 @@ def load_image(name):
 
 againHelp = 1
 
-## GATE 0.5
-# setup 
+running = True
 gate = 0.5
-diffList = [(0,0)]
-set_bg_color(screen, GRAY)
-screen.blit(next, (CENTER_X, CENTER_Y)) 
-# loop
-while gate==0.5:
-
-    text = '来玩呀!'
-    output_text(text, screen, (WIDTH/2-200, HEIGHT/2))
-
-    for e in pygame.event.get():
-        if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
-            gate=0
-            break
-        elif e.type == pygame.MOUSEBUTTONDOWN:
-            mouseX, mouseY = e.pos
-            if(is_click_on_diff(mouseX, mouseY, diffList)):
-                gate = 1
-                break   
-    pygame.display.update()
-
-## GATE 1 
-if gate==1 :
-    # setup
-    current_score = 0
-    diffList = [(136, 259), (418, 219), (656, 180), (303, 375), (447, 395), (509, 350), (708, 319), (329, 513), (711, 552)]
-    diffList = get_diffList(diffList)
-    #image
-    before = load_image("1.jpg")
-    after = load_image("1.1.jpg")
-
-
-    set_bg_color(screen, GRAY)
-
-    screen.blit(before, (BEFORE_X, PIC_HEIGHT))
-    screen.blit(after, (START_X, START_Y))
-
-    #bg music
-    clock_sound = pygame.mixer.Sound('clock.wav')
-    clock_sound.play(-1)
-
-    # time left
-    start_time = 5
-
-    # loop
-    while gate==1:
-        ## some animate, like score, time.
-        #score
-        score = '得分: '+ str(current_score)
-        output_text(score, screen, (WIDTH-150, 20))
-        #time left
-        total_seconds = start_time - (frame_count // frame_rate)
-        if total_seconds < 0:
-            total_seconds = 0
-        minutes = total_seconds // 60
-        seconds = total_seconds % 60
-
-        timeLeft = "剩余时间: {0:02}:{1:02}".format(minutes, seconds)
-        output_text(timeLeft, screen, (WIDTH-500, 20))
-        
-        ## handle event     
-        for e in pygame.event.get():
-            if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
-                gate=0
-                break
-            elif e.type == pygame.MOUSEBUTTONDOWN:
-                mouseX, mouseY = e.pos
-                if(is_click_on_diff(mouseX, mouseY, diffList)):
-                    pygame.draw.circle(screen, RED, (mouseX, mouseY), RADIUS, 1)
-                    #play_sound("right.wav")
-                    current_score += 1
-                    if len(diffList)==0: # success
-                        gate = 1.5
-                        break
-                #else:
-                    #play_sound("wrong.wav")
-        # left
-        diffLeft = '剩余个数: '+ str(len(diffList))
-        output_text(diffLeft, screen, (WIDTH-300, 20))
-
-        # display update
-        frame_count += 1
-        #play_sound('clock.wav')
-        clock.tick(frame_rate)              
-        pygame.display.update()
-
-        if total_seconds == 0:
-            clock_sound.stop()
-            #screen.fill((255,255,255,0))
-            text = '时间用完啦, 要重来一次嘛？'
-            output_text(text, screen, (CENTER_X, CENTER_Y))
-            pygame.display.update()
-        
+while running:
+    ## GATE 0.5
+    if gate==0.5 :
+        # setup 
+        # click position
+        diffList = [(0,0)]
+        # set background
+        set_bg_color(screen, GRAY)
+        # add a picture as next button
+        screen.blit(next, (CENTER_X, CENTER_Y)) 
+        # loop
+        while gate==0.5:
+            # load some text
+            text = '来玩呀!'
+            output_text(text, screen, (WIDTH/2-200, HEIGHT/2))
+            # handle event
             for e in pygame.event.get():
+                # check for exit event
                 if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
                     gate=0
                     break
+                # check for click on certain position
                 elif e.type == pygame.MOUSEBUTTONDOWN:
                     mouseX, mouseY = e.pos
-                    if(is_click_on_diff(mouseX, mouseY, [(0,0)])):
-                        # go back to beginning
-                        frame_count = 0
-                        # add image again
-                        set_bg_color(screen, GRAY)
-                        screen.blit(before, (BEFORE_X, PIC_HEIGHT))
-                        screen.blit(after, (START_X, START_Y)) 
-                        pygame.display.update()
-                        #bg music
-                        clock_sound = pygame.mixer.Sound('clock.wav')
-                        clock_sound.play(-1) 
-                        break
-                    else:
-                        game = 0
-                        break
-            againHelp -= 1
-
-    clock_sound.stop()
-
-## GATE 1.5
-#set up
-set_bg_color(screen, GRAY)
-screen.blit(next, (0,0))
-diffList = [(0,0)]
-#loop
-while gate==1.5:
-    fontObj = pygame.font.Font('freesansbold.ttf', 32)
-    textSurfaceObj = fontObj.render('You Find them! next gate...', True, GREEN, BLUE)
-    textRectObj = textSurfaceObj.get_rect()
-    textRectObj.center = (200, 150)
-    screen.blit(textSurfaceObj, textRectObj)
-
-    for e in pygame.event.get():
-        if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
-            gate=0
-            break
-        elif e.type == pygame.MOUSEBUTTONDOWN:
-            mouseX, mouseY = e.pos
-            if(is_click_on_diff(mouseX, mouseY, diffList)):
-                gate=2
-    pygame.display.update()
-
-## GATE 2
-
-if gate==2 :
-    # setup
-    current_score = 0
-    diffList = [(105, 202), (368, 108), (712, 75),
-                (82, 340), (398, 397), (711, 492), 
-                (108, 715), (448, 658), (712, 232)]
-    diffList = [(int(x+START_X), int(y+START_Y)) for x,y in diffList]
-    #image
-    before = pygame.image.load("2.jpg")
-    after = pygame.image.load("2.1.jpg")
-    set_bg_color(screen, GRAY)
-    screen.blit(before, (0, PIC_HEIGHT))
-    screen.blit(after, (START_X, START_Y))
-
-    # loop
-    while gate==2:
-        #score
-        score = 'Score: '+ str(current_score)
-        output_text(score, screen, (WIDTH-150, 20))
-        #time left
-        total_seconds = start_time - (frame_count // frame_rate)
-        if total_seconds < 0:
-            total_seconds = 0
-        minutes = total_seconds // 60
-        seconds = total_seconds % 60
-
-        timeLeft = "Time left: {0:02}:{1:02}".format(minutes, seconds)
-        output_text(timeLeft, screen, (WIDTH-500, 20))
-        
-        #event
-        '''
-        if (total_seconds == 0):
-            text = 'Your time running out!'
-            output_text(text, screen, (WIDTH/2, HEIGHT/2))
-            pygame.draw.circle(screen, RED, diffList.pop(), RADIUS, 1)
-        
-        else:
-        ''' 
-        for e in pygame.event.get():
-            if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
-                gate=0
-                break
-            elif e.type == pygame.MOUSEBUTTONDOWN:
-                mouseX, mouseY = e.pos
-                if(is_click_on_diff(mouseX, mouseY, diffList)):
-                    pygame.draw.circle(screen, RED, (mouseX, mouseY), RADIUS, 1)
-                    play_sound("right.wav")
-                    current_score += 1
-                    if len(diffList)==0: # success
-                        gate = 1.5
-                        break
+                    if(is_click_on_diff(mouseX, mouseY, diffList)):
+                        # enter next gate
+                        gate = 1
+                        break   
+            pygame.display.update()
+    ## GATE 1 
+    elif gate==1 :
+        # setup
+        #init score
+        current_score = 0
+        #init frame_count
+        frame_count = 0
+        # different area position
+        diffList = [(136, 259), (418, 219), (656, 180), (303, 375), (447, 395), (509, 350), (708, 319), (329, 513), (711, 552)]
+        diffList = get_diffList(diffList)
+        #image for gate 1
+        before = load_image("1.jpg")
+        after = load_image("1.1.jpg")
+        #flush screen with color gray
+        set_bg_color(screen, GRAY)
+        #put image to screen
+        screen.blit(before, (BEFORE_X, PIC_HEIGHT))
+        screen.blit(after, (START_X, START_Y))
+        #bg music
+        clock_sound = pygame.mixer.Sound('clock.wav')
+        clock_sound.play(-1) # -1 for loop forever until stoppting call
+        # set gate time
+        start_time = 5
+        # loop
+        while gate==1:
+            ## some animate, like score, time.
+            #show score animate
+            score = '得分: '+ str(current_score)
+            output_text(score, screen, (WIDTH-150, 20))
+            #show left time animate
+            total_seconds = start_time - (frame_count // frame_rate)
+            if total_seconds < 0:
+                total_seconds = 0
+            minutes = total_seconds // 60
+            seconds = total_seconds % 60
+            timeLeft = "剩余时间: {0:02}:{1:02}".format(minutes, seconds)
+            output_text(timeLeft, screen, (WIDTH-500, 20))
+            # show left different area numbers
+            diffLeft = '剩余个数: '+ str(len(diffList))
+            output_text(diffLeft, screen, (WIDTH-300, 20))
+            #pygame.display.update()
+            # if time runs out
+            if total_seconds == 0 :
+                # stop clock music
+                clock_sound.stop()
+                # if there is no help left, fail.
+                if againHelp == 0:
+                    # show the user loosed.
+                    text = '时间用完了，你输了！'
+                    output_text(text, screen, (CENTER_X, CENTER_Y))
+                    pygame.display.update()
+                    for e in pygame.event.get():
+                        #handle exit event
+                        if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
+                            gate=0
+                            break
+                        #handle click event
+                        elif e.type == pygame.MOUSEBUTTONDOWN:
+                            mouseX, mouseY = e.pos
+                            #check if click on a dirrerent area
+                            if(is_click_on_diff(mouseX, mouseY, diffList)): # if yes
+                                gate=0 
+                                break 
+                    
+                # ask for help 
                 else:
-                    play_sound("wrong.wav")
+                    #screen.fill((255,255,255,0))
+                    text = '时间用完啦, 要重来一次嘛？'
+                    output_text(text, screen, (CENTER_X, CENTER_Y))
+                    #playAgain = load_image()
+                    #screen.blit(playAgain, (BEFORE_X, PIC_HEIGHT))
+                    for e in pygame.event.get():
+                        if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
+                            gate=0
+                            #break
+                        elif e.type == pygame.MOUSEBUTTONDOWN:
+                            mouseX, mouseY = e.pos
+                            # click certain area for ok
+                            if(is_click_on_diff(mouseX, mouseY, [(0,0)])):
+                                # go back to beginning
+                                againHelp -= 1
+                                gate=0.5
+                                #break
+            # if time doesn't run out
+            else:
+                ## handle event     
+                for e in pygame.event.get():
+                    #handle exit event
+                    if e.type == pygame.KEYDOWN: # shutdown by keyboard pressed
+                        gate=0
+                        break
+                    #handle click event
+                    elif e.type == pygame.MOUSEBUTTONDOWN:
+                        mouseX, mouseY = e.pos
+                        #check if click on a dirrerent area
+                        if(is_click_on_diff(mouseX, mouseY, diffList)): # if yes
+                            # draw a circle to mark this area
+                            pygame.draw.circle(screen, RED, (mouseX, mouseY), RADIUS, 1)
+                            #play_sound("right.wav")
+                            # increase score by 1
+                            current_score += 1
+                            # if all area are marked, succeed
+                            if len(diffList)==0:
+                                gate = 1.5
+                                break
+                        # if click on a wrong area, play a sound
+                        else:
+                            pass
+                            #play_sound("wrong.wav")
+                # show left different area
+            
+            # display update
+            frame_count += 1
+            #play_sound('clock.wav')
+            clock.tick(frame_rate)              
+            pygame.display.update()
+        clock_sound.stop()
+    else:
+        running=False
 
-        # left
-        diffLeft = 'Left: '+ str(len(diffList))
-        output_text(diffLeft, screen, (WIDTH-300, 20))
-
-        # display update
-        frame_count += 1
-        clock.tick(frame_rate)          
-        pygame.display.flip()
-
+# quit the game
 pygame.quit()
