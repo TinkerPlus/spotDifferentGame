@@ -186,7 +186,6 @@ if gate==1 :
         clock.tick(frame_rate)              
         pygame.display.update()
 
-        
 
     clock_sound.stop()
 
