@@ -16,14 +16,6 @@ CENTER_X = WIDTH/2
 CENTER_Y = HEIGHT/2
 screen = pygame.display.set_mode(SCREENSIZE)
 
-'''
-## FULL SCREEN
-SCREENSIZE = pygame.FULLSCREEN
-screen = pygame.display.set_mode((0,0), SCREENSIZE)
-displayInfo = pygame.display.Info()
-WIDTH, HEIGHT = displayInfo.current_w, displayInfo.current_h
-'''
-
 ## layout
 PIC_HEIGHT = 80
 START_X, START_Y = WIDTH/2, PIC_HEIGHT
@@ -242,7 +234,7 @@ def play_win_animate(play_seconds=5, FPS=25):
     # 剩余时间
     left_seconds = 1
      
-    #play_sound('hecai.wav')
+    #play_sound('hecai.mp3')
     while (left_seconds):
         
         #检查退出时间
@@ -507,10 +499,11 @@ def run_gate(gate_num, total_diff_list):
             if(is_click_on_diff(mouseX, mouseY, diffList)): 
                 # 在点击点画圆
                 draw_circles(mouseX, mouseY, screen)
-                #play_sound("right.wav")
+                play_sound("right.wav")
                 # 分数加一
                 current_score += 1
-                
+            #else:
+                #play_sound("wrong.wav") 
                 # 如果全部不同点都找到，进入下一关
             if len(diffList)==0:
                 gate = current_gate+0.5
