@@ -9,12 +9,23 @@ from pygame.locals import *
 DEBUG=False
 
 pygame.init()
+'''
 ## No FULL SCREEN
 SCREENSIZE = (1280, 1204)
 WIDTH, HEIGHT = SCREENSIZE
 CENTER_X = WIDTH/2
 CENTER_Y = HEIGHT/2
 screen = pygame.display.set_mode(SCREENSIZE)
+'''
+
+## FULL SCREEN
+SCREENSIZE = pygame.FULLSCREEN
+screen = pygame.display.set_mode((0,0), SCREENSIZE)
+displayInfo = pygame.display.Info()
+WIDTH, HEIGHT = displayInfo.current_w, displayInfo.current_h
+CENTER_X = WIDTH/2
+CENTER_Y = HEIGHT/2
+
 
 ## layout
 PIC_HEIGHT = 80
@@ -122,6 +133,7 @@ def play_sound(fileName):
     #    pass
 
 def load_image(name, width=600, height=600):
+    #global WIDTH, HEIGHT
     name = str(name)
     img = pygame.image.load(name)
     img = pygame.transform.scale(img, (width, height))
@@ -204,6 +216,7 @@ def draw_circles(mouseX, mouseY, screen):
     pygame.draw.circle(screen, GREEN, (mouseX, mouseY), RADIUS, 1)
 
 def play_win_animate(play_seconds=5, FPS=25):
+    global gate
     # This is a list of 'sprites.' Each block in the program is
     # added to this list. The list is managed by a class called 'Group.'
     block_list = pygame.sprite.Group()
@@ -239,6 +252,7 @@ def play_win_animate(play_seconds=5, FPS=25):
         
         #检查退出时间
         check_for_quit()
+
         # Clear the screen
         screen.fill(BLUE)
      
@@ -260,6 +274,9 @@ def play_win_animate(play_seconds=5, FPS=25):
         #print(left_seconds)
         if left_seconds <0:
             left_seconds = 0
+
+    
+    gate= 0.4
 
 def play_lose_animate(FPS, screen):
     global againHelp, gate
@@ -298,46 +315,46 @@ def set_total_diff_list():
     [(105, 202), (368, 108), (712, 75),
      (82, 340), (398, 397), (711, 492), 
      (108, 715), (448, 658), (712, 232)],
-
+    # 3
     [(164, 152), (385, 172), (659, 218),
     (344, 619), (682, 654)],
-
+    # 4
     [(385, 63), (498, 131), (745, 144),
     (246, 241), (423, 324), (398, 536), (206, 613)],
-
+    # 5
     [(211, 147), (336, 134), (409, 139),
     (628, 120), (338, 395), (525, 473),
     (202, 604), (357, 591), (499, 603),
     (662, 612), (389, 723), (591, 718),
     (588, 780)],
-
+    # 6
     [(190, 75), (425, 112), (600, 105), 
     (215, 280), (422, 288), (603, 364), 
     (165, 596), (431, 663), (655, 611)],
-
+    # 7
     [(390, 229), (397, 339), (163, 412),
     (392, 409), (666, 437), (390, 533)],
-
+    # 8
     [(445, 476), (348, 592), (409, 646), 
     (580, 658), (202, 705), (300, 700)],
-
-    [(204, 340), (1309, 326), (114, 254), 
+    # 9
+    [(204, 340), (49, 89), (114, 254), 
     (292, 221), (378, 193), (473, 277), 
     (644, 268), (764, 298), (120, 377),
     (193, 393), (352, 373), (477, 391),
     (602, 429), (742, 435), (232, 491), 
     (277, 620), (240, 740), (70, 766), 
     (486, 488), (434, 604), (524, 716), (702, 665)],
-
+    # 10
     [(286, 69), (450, 54), (284, 146), (258, 194), 
     (313, 170), (470, 144), (273, 335), (385, 321),
     (417, 375), (522, 320), (590, 369), (270, 438), 
     (471, 435), (326, 559), (405, 630), (472, 602),
     (580, 631), (334, 707)],
-
+    # 11
     [(122, 233), (691, 126), (542, 428), 
     (708, 570), (369, 697), (703, 702)],
-
+    # 12
     [(204, 193), (598, 190), (295, 377), (101, 425), 
     (203, 512), (356, 542), (505, 403), (593, 536), 
     (684, 440), (406, 642), (656, 269)],
@@ -524,6 +541,7 @@ def run_game():
     againHelp = 1
     running = True 
     gate = 0.4 # start from gate 0.4
+    #gate = 23.5
     start_time = 0 #初始化每局游戏时间 
     frame_count = 0
     # game loop
@@ -637,13 +655,9 @@ def run_game():
         elif gate==23:
             run_gate(gate, total_diff_list)
         elif gate==23.5:
-            run_gate_pre(gate)
-        elif gate==24:
-            run_gate(gate, total_diff_list)
-
-
-        elif gate==24.5 :
             play_win_animate()
+
+            
 
 def main():
     run_game()
