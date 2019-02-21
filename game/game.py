@@ -147,12 +147,12 @@ def check_for_quit():
             terminate() # terminate if the KEYUP event was for the Esc key
         pygame.event.post(event) # put the other KEYUP event objects back
 
-def get_game_time(diffList):
+def get_game_time(num):
     if DEBUG:
         eachTime = 1
     else:
         eachTime = 10  # 每个10秒
-    totalTmie = len(diffList) * eachTime
+    totalTmie = num * eachTime
     return totalTmie
     
 def check_for_click_on():
@@ -210,8 +210,6 @@ def draw_circles(mouseX, mouseY, screen):
     # 计算左边图像的对应位置
     mouseX, mouseY = mouseX- 600, mouseY
     pygame.draw.circle(screen, GREEN, (mouseX, mouseY), RADIUS, 1)
-
-
 
 def play_win_animate(play_seconds=5, FPS=25):
     # This is a list of 'sprites.' Each block in the program is
@@ -307,7 +305,95 @@ def set_total_diff_list():
     # 第二关
     [(105, 202), (368, 108), (712, 75),
      (82, 340), (398, 397), (711, 492), 
-     (108, 715), (448, 658), (712, 232)] ]
+     (108, 715), (448, 658), (712, 232)],
+
+    [(164, 152), (385, 172), (659, 218),
+    (344, 619), (682, 654)],
+
+    [(385, 63), (498, 131), (745, 144),
+    (246, 241), (423, 324), (398, 536), (206, 613)],
+
+    [(211, 147), (336, 134), (409, 139),
+    (628, 120), (338, 395), (525, 473),
+    (202, 604), (357, 591), (499, 603),
+    (662, 612), (389, 723), (591, 718),
+    (588, 780)],
+
+    [(190, 75), (425, 112), (600, 105), 
+    (215, 280), (422, 288), (603, 364), 
+    (165, 596), (431, 663), (655, 611)],
+
+    [(390, 229), (397, 339), (163, 412),
+    (392, 409), (666, 437), (390, 533)],
+
+    [(445, 476), (348, 592), (409, 646), 
+    (580, 658), (202, 705), (300, 700)],
+
+    [(204, 340), (1309, 326), (114, 254), 
+    (292, 221), (378, 193), (473, 277), 
+    (644, 268), (764, 298), (120, 377),
+    (193, 393), (352, 373), (477, 391),
+    (602, 429), (742, 435), (232, 491), 
+    (277, 620), (240, 740), (70, 766), 
+    (486, 488), (434, 604), (524, 716), (702, 665)],
+
+    [(286, 69), (450, 54), (284, 146), (258, 194), 
+    (313, 170), (470, 144), (273, 335), (385, 321),
+    (417, 375), (522, 320), (590, 369), (270, 438), 
+    (471, 435), (326, 559), (405, 630), (472, 602),
+    (580, 631), (334, 707)],
+
+    [(122, 233), (691, 126), (542, 428), 
+    (708, 570), (369, 697), (703, 702)],
+
+    [(204, 193), (598, 190), (295, 377), (101, 425), 
+    (203, 512), (356, 542), (505, 403), (593, 536), 
+    (684, 440), (406, 642), (656, 269)],
+
+    # 第13关
+    [(99, 246), (59, 388), (139, 508), (137, 671), 
+    (281, 548), (466, 480), (493, 627), (740, 112), 
+    (761, 300), (649, 384), (717, 507), (648, 571), 
+    (689, 659)],
+
+    #14
+    [(207, 335), (409, 316), (618, 310), (314, 465), 
+    (411, 436), (512, 443), (403, 616)],
+
+    #15
+    [(250, 113), (234, 190), (507, 176), (580, 265), 
+    (576, 381), (234, 552), (533, 629)],
+
+    #16
+    [(428, 343), (240, 438), (628, 414), 
+    (530, 496), (749, 501), (141, 575)],
+
+    #17
+    [(250, 406), (533, 228), (467, 354), 
+    (490, 593), (698, 730)],
+
+    #18
+    [(372, 348), (260, 428), (301, 515), 
+    (367, 492), (460, 494), (550, 426)],
+
+    #19
+    [(194, 352), (323, 352), (474, 278), (317, 579)],
+
+    #20
+    [(208, 257), (590, 253), (219, 519), (606, 515)],
+
+    #21
+    [(222, 392), (519, 373)],
+
+    #22
+    [(445, 160), (571, 152), (507, 286), (626, 285), 
+    (452, 448), (630, 484), (554, 630)],
+
+    #23
+    [(152, 90), (273, 179), (411, 180), (568, 157), 
+    (400, 260), (161, 413), (384, 424), (584, 376), 
+    (215, 688), (385, 664), (573, 626)]  
+    ]
 
 def run_gate_pre(gate_num):
     global gate
@@ -344,6 +430,8 @@ def run_gate(gate_num, total_diff_list):
     # 不同点数据
     diffList =  total_diff_list[gate_num-1]   
     diffList = get_diffList(diffList)
+    # different area num for get game time
+    different_area_num = len(diffList)
     # 第一关的比较图片
     before = load_image(str(current_gate)+".jpg")
     after = load_image(str(current_gate)+".1.jpg")
@@ -357,7 +445,7 @@ def run_gate(gate_num, total_diff_list):
     clock_sound.play(-1) # -1 for loop forever until stoppting call
     # 设置本局游戏时间
     if (againHelp == 1):
-        start_time = get_game_time(diffList)
+        start_time = get_game_time(different_area_num)
         
     ## 游戏循环
     while gate==current_gate:
@@ -400,9 +488,9 @@ def run_gate(gate_num, total_diff_list):
                 if(is_click_on_diff(mouseX, mouseY, [(557,673)])):
                     againHelp -= 1   # 减少帮助次数
                     if DEBUG:
-                        start_time = get_game_time(diffList)
+                        start_time = get_game_time(different_area_num)
                     else:
-                        start_time = get_game_time(diffList) * 2 # 为其增加游戏时间
+                        start_time = get_game_time(different_area_num) * 2 # 为其增加游戏时间
                     gate = current_gate - 0.5      # 进入本关欢迎界面
                     #print(gate)
                 # 如果用户不接受帮助，点击cancle, 则退回至总欢迎界面
@@ -470,7 +558,98 @@ def run_game():
         ## 进入第一关
         elif gate==2 :
             run_gate(gate, total_diff_list)
-        elif gate==2.5 :
+        elif gate==2.5:
+            run_gate_pre(gate)
+        elif gate==3:
+            run_gate(gate, total_diff_list)
+        elif gate==3.5:
+            run_gate_pre(gate)
+        elif gate==4:
+            run_gate(gate, total_diff_list)
+        elif gate==4.5:
+            run_gate_pre(gate)
+        elif gate==5:
+            run_gate(gate, total_diff_list)
+        elif gate==5.5:
+            run_gate_pre(gate)
+        elif gate==6:
+            run_gate(gate, total_diff_list)
+        elif gate==6.5:
+            run_gate_pre(gate)
+        elif gate==7:
+            run_gate(gate, total_diff_list)
+        elif gate==7.5:
+            run_gate_pre(gate)
+        elif gate==8:
+            run_gate(gate, total_diff_list)
+        elif gate==8.5:
+            run_gate_pre(gate)
+        elif gate==9:
+            run_gate(gate, total_diff_list)
+        elif gate==9.5:
+            run_gate_pre(gate)
+        elif gate==10:
+            run_gate(gate, total_diff_list)
+        # 10.5
+        elif gate==10.5:
+            run_gate_pre(gate)
+        elif gate==11:
+            run_gate(gate, total_diff_list)
+        elif gate==11.5:
+            run_gate_pre(gate)
+        elif gate==12:
+            run_gate(gate, total_diff_list)
+        elif gate==12.5:
+            run_gate_pre(gate)
+        elif gate==13:
+            run_gate(gate, total_diff_list)
+        elif gate==13.5:
+            run_gate_pre(gate)
+        elif gate==14:
+            run_gate(gate, total_diff_list)
+        elif gate==14.5:
+            run_gate_pre(gate)
+        elif gate==15:
+            run_gate(gate, total_diff_list)
+        elif gate==15.5:
+            run_gate_pre(gate)
+        elif gate==16:
+            run_gate(gate, total_diff_list)
+        elif gate==16.5:
+            run_gate_pre(gate)
+        elif gate==17:
+            run_gate(gate, total_diff_list)
+        elif gate==17.5:
+            run_gate_pre(gate)
+        elif gate==18:
+            run_gate(gate, total_diff_list)
+        elif gate==18.5:
+            run_gate_pre(gate)
+        elif gate==19:
+            run_gate(gate, total_diff_list)
+        elif gate==19.5:
+            run_gate_pre(gate)
+        elif gate==20:
+            run_gate(gate, total_diff_list)
+        elif gate==20.5:
+            run_gate_pre(gate)
+        elif gate==21:
+            run_gate(gate, total_diff_list)
+        elif gate==21.5:
+            run_gate_pre(gate)
+        elif gate==22:
+            run_gate(gate, total_diff_list)
+        elif gate==22.5:
+            run_gate_pre(gate)
+        elif gate==23:
+            run_gate(gate, total_diff_list)
+        elif gate==23.5:
+            run_gate_pre(gate)
+        elif gate==24:
+            run_gate(gate, total_diff_list)
+
+
+        elif gate==24.5 :
             play_win_animate()
 
 def main():
