@@ -1,12 +1,12 @@
 # -*- coding: UTF-8 -*-
-import sys
+import sys, random
 
 import pygame
 from pygame.locals import *
 
 
 # 设置是否为开发模式，非开发时，需设置为False
-DEBUG=True
+DEBUG=False
 
 pygame.init()
 ## No FULL SCREEN
@@ -47,6 +47,49 @@ FPS = 25
 gate = 0
 current_gate = 0
 
+total_diff_list = []
+
+class Block(pygame.sprite.Sprite):
+    """
+    This class represents the ball
+    It derives from the "Sprite" class in Pygame
+    """
+    def __init__(self, imgName, width, height):
+        """ Constructor. Pass in the color of the block,
+        and its x and y position. """
+        # Call the parent class (Sprite) constructor
+        super().__init__()
+ 
+        # Create an image of the block, and fill it with a color.
+        # This could also be an image loaded from the disk.
+        #self.image = pygame.Surface([width, height])
+        #self.image.fill(color)
+        
+        self.image = pygame.image.load(imgName)
+        self.image = pygame.transform.scale(self.image, (width, height))
+        # Fetch the rectangle object that has the dimensions of the image
+        # image.
+        # Update the position of this object by setting the values
+        # of rect.x and rect.y
+        self.rect = self.image.get_rect()
+ 
+    def reset_pos(self):
+        """ Reset position to the top of the screen, at a random x location.
+        Called by update() or the main program loop if there is a collision.
+        """
+        self.rect.y = random.randrange(-300, -20)
+        self.rect.x = random.randrange(0, WIDTH)
+ 
+    def update(self):
+        """ Called each frame. """
+ 
+        # Move block down one pixel
+        self.rect.y += 5
+ 
+        # If block is too far down, reset to top of screen.
+        if self.rect.y > HEIGHT:
+            self.reset_pos()
+
 def get_diffList(diffList):
     START_X, START_Y = WIDTH/2, PIC_HEIGHT
     #diffList = [(136, 259), (418, 219), (656, 180), (303, 375), (447, 395), (509, 350), (708, 319), (329, 513), (711, 552)]
@@ -83,8 +126,8 @@ def play_sound(fileName):
     pygame.mixer.init(48000, -16, 1, 1024)
     soundObj = pygame.mixer.Sound(fileName)
     soundObj.play()
-    while pygame.mixer.get_busy():
-        pass
+    #while pygame.mixer.get_busy():
+    #    pass
 
 def load_image(name, width=600, height=600):
     name = str(name)
@@ -92,28 +135,9 @@ def load_image(name, width=600, height=600):
     img = pygame.transform.scale(img, (width, height))
     return img
 
-def play_sq():
-    FPS = 10
-    #imgList=['sq_0.png']
-    # generate 7 png images' file name
-    imgNamList = ['sq_'+str(num)+'.png' for num in range(7)]
-    imgList = [pygame.image.load(name) for name in imgNamList]
-
-    screen.blit(imgList[1], (0,0))
-    time_passed = clock.tick()
-    time_passed_seconds = time_passed / 1000
-    pygame.display.update() 
-
-#play_sq()
-
 def terminate():
     pygame.quit()
     sys.exit()
-
-def display_game_over(screen):
-    img = pygame.image.load('game_over.png')
-    screen.blit(img, (0,0))
-    pygame.display.update
 
 def check_for_quit():
     for event in pygame.event.get(QUIT): # get all the QUIT events
@@ -133,7 +157,7 @@ def get_game_time(diffList):
     
 def check_for_click_on():
     '''
-    return mouse click positoin (mouseX, mouseY)
+    检查点击屏幕时间，并且返回鼠标点击位置
     '''
     mouseX, mouseY = 0, 0
     for e in pygame.event.get():
@@ -141,10 +165,22 @@ def check_for_click_on():
             mouseX, mouseY = e.pos
     return mouseX, mouseY
 
+def check_for_click():
+    '''
+    检查是否点击屏幕
+    '''
+    mouseX, mouseY = 0, 0
+    for e in pygame.event.get():
+        if e.type == pygame.MOUSEBUTTONDOWN:
+            mouseX, mouseY = e.pos
+    if mouseX != 0:
+        return mouseX, mouseY
+
 def click_on_yes_button_to_next():
     mouseX, mouseY = check_for_click_on() # get mouse position
     if(is_click_on_diff(mouseX, mouseY, [(635, 677)])): # click on yes
         gate += 0.5 
+
 def prepare_for_gate(gate):
     ## 设置 
     current_gate = gate
@@ -168,8 +204,242 @@ def prepare_for_gate(gate):
             gate= int(gate + 0.5)  
         pygame.display.update() # 显示准备进入第一关的图片
 
-def runGame():
+def draw_circles(mouseX, mouseY, screen):
+    # 右边图像的标记点
+    pygame.draw.circle(screen, RED, (mouseX, mouseY), RADIUS, 1)
+    # 计算左边图像的对应位置
+    mouseX, mouseY = mouseX- 600, mouseY
+    pygame.draw.circle(screen, GREEN, (mouseX, mouseY), RADIUS, 1)
+
+
+
+def play_win_animate(play_seconds=5, FPS=25):
+    # This is a list of 'sprites.' Each block in the program is
+    # added to this list. The list is managed by a class called 'Group.'
+    block_list = pygame.sprite.Group()
+ 
+    # This is a list of every sprite. All blocks and the player block as well.
+    all_sprites_list = pygame.sprite.Group()
+ 
+    # 生成50张人民币
+    for i in range(50):
+        # This represents a block
+        block = Block('renminbi.jpg', 150, 80)
+     
+        # Set a random location for the block
+        block.rect.x = random.randrange(WIDTH)
+        block.rect.y = random.randrange(HEIGHT)
+     
+        # Add the block to the list of objects
+        block_list.add(block)
+        all_sprites_list.add(block)
+
+
+     
+    # 设置屏幕刷新频率
+    clock = pygame.time.Clock()
+     
+    # 设置运行时间
+    frame_count = 0
+    # 剩余时间
+    left_seconds = 1
+     
+    #play_sound('hecai.wav')
+    while (left_seconds):
+        
+        #检查退出时间
+        check_for_quit()
+        # Clear the screen
+        screen.fill(BLUE)
+     
+        # Calls update() method on every sprite in the list
+        all_sprites_list.update()
+     
+        all_sprites_list.draw(screen)
+     
+        # Limit to 20 frames per second
+        clock.tick(FPS)
+
+        # Go ahead and update the screen with what we've drawn.
+        pygame.display.flip()
+
+        #计算播放时间
+        frame_count += 1
+
+        left_seconds = play_seconds - (frame_count // FPS)
+        #print(left_seconds)
+        if left_seconds <0:
+            left_seconds = 0
+
+def play_lose_animate(FPS, screen):
+    global againHelp, gate
+    # 加载背景图片
+    game_over_image = pygame.image.load("game_over.png")
+    # 设置计时器
+    clock = pygame.time.Clock()
+
+    stay = True
+    # 主循环中显示图片，检测退出和回到初始界面时间
+    while stay:
+        
+        #检查退出时间
+        check_for_quit()
+        # 如果点击，退出游戏结束画面，并将入口设置为gate=0.4
+        # 另外，将againHelp重置为1
+        if(check_for_click()):
+            stay=False
+            againHelp = 1
+            gate = 0.4
+        # 显示图片
+        screen.blit(game_over_image, (0,0))
+        
+        # 按FPS设定频率刷新显示器
+        clock.tick(FPS)
+        pygame.display.flip()
+
+def set_total_diff_list():
+    global total_diff_list
+    total_diff_list = [
+    # 第一关
+    [(136, 259), (418, 219), (656, 180), 
+     (303, 375), (447, 395), (509, 350), 
+     (708, 319), (329, 513), (711, 552)],
+    # 第二关
+    [(105, 202), (368, 108), (712, 75),
+     (82, 340), (398, 397), (711, 492), 
+     (108, 715), (448, 658), (712, 232)] ]
+
+def run_gate_pre(gate_num):
     global gate
+    current_gate = gate_num
+    diffList = [(635, 677)]
+    # set background
+    set_bg_color(screen, BLUE)
+    # add a picture as next button
+    screen.blit(next, (0, 0)) 
+    
+    # loop
+    while current_gate==gate:
+        # load some text
+        text = '第'+str(current_gate+0.5)+'关!'
+        output_text(text, screen, (476, 483))
+        # handle event
+        check_for_quit()
+        # 点击yes，设置gate+=0.5，进入下一关
+        mouseX, mouseY = check_for_click_on() # 获取点击鼠标时候的位置
+        if(is_click_on_diff(mouseX, mouseY, diffList)): # 判断该位置是否为yes按钮上
+            # 成功进入下一关
+            gate= int(current_gate + 0.5)
+            #print(gate)
+        pygame.display.update() # 显示准备进入第一关的图片
+
+def run_gate(gate_num, total_diff_list):
+    global againHelp, gate, start_time
+    current_gate = int(gate_num)
+    ## 初始化设置
+    # 初始化分数
+    current_score = 0
+    # 初始化游戏时间
+    frame_count = 0
+    # 不同点数据
+    diffList =  total_diff_list[gate_num-1]   
+    diffList = get_diffList(diffList)
+    # 第一关的比较图片
+    before = load_image(str(current_gate)+".jpg")
+    after = load_image(str(current_gate)+".1.jpg")
+    # 初始化背景为蓝色
+    set_bg_color(screen, BLUE)
+    # 添加比较图片到屏幕
+    screen.blit(before, (BEFORE_X, PIC_HEIGHT))
+    screen.blit(after, (START_X, START_Y))
+    # 设置北京音乐
+    clock_sound = pygame.mixer.Sound('clock.wav')
+    clock_sound.play(-1) # -1 for loop forever until stoppting call
+    # 设置本局游戏时间
+    if (againHelp == 1):
+        start_time = get_game_time(diffList)
+        
+    ## 游戏循环
+    while gate==current_gate:
+        ## 一些动画
+        # 显示得分动画
+        score = '得分: '+ str(current_score)
+        output_text(score, screen, (WIDTH-150, 20))
+        # 计算剩余时间
+        left_seconds = start_time - (frame_count // FPS) #获取剩余时间
+        if left_seconds < 0:
+            left_seconds = 0
+        minutes = left_seconds // 60 
+        seconds = left_seconds % 60
+        # 显示剩余时间动画
+        timeLeft = "剩余时间: {0:02}:{1:02}".format(minutes, seconds)
+        output_text(timeLeft, screen, (WIDTH-500, 20))
+        # 计算并显示剩余不同点个数
+        diffLeft = '剩余个数: '+ str(len(diffList))
+        output_text(diffLeft, screen, (WIDTH-300, 20))
+        
+        ## 如果时间用完，显示帮助提示
+        if left_seconds == 0 :
+            clock_sound.stop() # 此时应该关闭钟表声音
+
+            # 如果提示次数已经用完，游戏结束，任意点击回到欢迎界面
+            if againHelp == 0: 
+                play_lose_animate(FPS, screen)
+
+            # 如果还有提示次数，询问其是否接受帮助
+            else:
+                # 刷新屏幕，以防止用户停在这里，观察不同点
+                screen.fill(BLUE)
+                # 显示是否需要提示
+                screen.blit(pygame.image.load('more_time.png'), (0,0))
+                
+                check_for_quit()
+
+                mouseX, mouseY = check_for_click_on()
+                # 如果用户接受帮助，重玩本关，进入本关欢迎界面
+                if(is_click_on_diff(mouseX, mouseY, [(557,673)])):
+                    againHelp -= 1   # 减少帮助次数
+                    if DEBUG:
+                        start_time = get_game_time(diffList)
+                    else:
+                        start_time = get_game_time(diffList) * 2 # 为其增加游戏时间
+                    gate = current_gate - 0.5      # 进入本关欢迎界面
+                    #print(gate)
+                # 如果用户不接受帮助，点击cancle, 则退回至总欢迎界面
+                elif(is_click_on_diff(mouseX, mouseY, [(722, 675)])): 
+                    play_lose_animate(FPS, screen)
+    
+        
+        # 如果时间还有，则正常进行游戏
+        else:
+            ## 
+            check_for_quit()   
+            mouseX, mouseY = check_for_click_on()
+            #如果点击点距离不同点比较近，则认为找到了不同点，标记圆圈
+            if(is_click_on_diff(mouseX, mouseY, diffList)): 
+                # 在点击点画圆
+                draw_circles(mouseX, mouseY, screen)
+                #play_sound("right.wav")
+                # 分数加一
+                current_score += 1
+                
+                # 如果全部不同点都找到，进入下一关
+            if len(diffList)==0:
+                gate = current_gate+0.5
+        
+        # 记录一次循环次数（一帧次数）
+        frame_count += 1
+        #play_sound('clock.wav')
+        # 按照FPS来刷新屏幕
+        clock.tick(FPS)              
+        pygame.display.update()
+     # 第一关循环结束后，关闭钟表声音。   
+    clock_sound.stop()
+
+def run_game():
+    global gate, againHelp, start_time, total_diff_list
+    set_total_diff_list()
+
     againHelp = 1
     running = True 
     gate = 0.4 # start from gate 0.4
@@ -191,274 +461,22 @@ def runGame():
                     gate = 0.5 
         ## 第一关准备
         elif gate==0.5 :
-            current_gate = gate
-            diffList = [(635, 677)]
-            # set background
-            set_bg_color(screen, BLUE)
-            # add a picture as next button
-            screen.blit(next, (0, 0)) 
-            
-            # loop
-            while current_gate==gate:
-                # load some text
-                text = '第'+str(int(gate+0.5))+'关!'
-                output_text(text, screen, (476, 483))
-                # handle event
-                check_for_quit()
-                # 点击yes，设置gate+=0.5，进入下一关
-                mouseX, mouseY = check_for_click_on() # 获取点击鼠标时候的位置
-                if(is_click_on_diff(mouseX, mouseY, diffList)): # 判断该位置是否为yes按钮上
-                    gate= int(gate + 0.5)  
-                pygame.display.update() # 显示准备进入第一关的图片
+            run_gate_pre(gate)
         ## 进入第一关
         elif gate==1 :
-            current_gate = gate
-            ## 初始化设置
-            # 初始化分数
-            current_score = 0
-            # 初始化游戏时间
-            frame_count = 0
-            # 不同点数据
-            diffList = [(136, 259), (418, 219), (656, 180), (303, 375), (447, 395), (509, 350), (708, 319), (329, 513), (711, 552)]
-            diffList = get_diffList(diffList)
-            # 第一关的比较图片
-            before = load_image("1.jpg")
-            after = load_image("1.1.jpg")
-            # 初始化背景为蓝色
-            set_bg_color(screen, BLUE)
-            # 添加比较图片到屏幕
-            screen.blit(before, (BEFORE_X, PIC_HEIGHT))
-            screen.blit(after, (START_X, START_Y))
-            # 设置北京音乐
-            clock_sound = pygame.mixer.Sound('clock.wav')
-            clock_sound.play(-1) # -1 for loop forever until stoppting call
-            # 设置本局游戏时间
-            if (againHelp == 1):
-                start_time = get_game_time(diffList)
-                
-            ## 游戏循环
-            while gate==current_gate:
-                ## 一些动画
-                # 显示得分动画
-                score = '得分: '+ str(current_score)
-                output_text(score, screen, (WIDTH-150, 20))
-                # 计算剩余时间
-                left_seconds = start_time - (frame_count // FPS) #获取剩余时间
-                if left_seconds < 0:
-                    left_seconds = 0
-                minutes = left_seconds // 60 
-                seconds = left_seconds % 60
-                # 显示剩余时间动画
-                timeLeft = "剩余时间: {0:02}:{1:02}".format(minutes, seconds)
-                output_text(timeLeft, screen, (WIDTH-500, 20))
-                # 计算并显示剩余不同点个数
-                diffLeft = '剩余个数: '+ str(len(diffList))
-                output_text(diffLeft, screen, (WIDTH-300, 20))
-                
-                ## 如果时间用完，显示帮助提示
-                if left_seconds == 0 :
-                    clock_sound.stop() # 此时应该关闭钟表声音
-
-                    # 如果提示次数已经用完，游戏结束，任意点击回到欢迎界面
-                    if againHelp == 0: 
-                        # 显示输了
-                        text = '时间用完了，你输了！'
-                        output_text(text, screen, (CENTER_X, CENTER_Y))
-                        display_game_over(screen)
-                        # 处理退出以及点击事件
-                        check_for_quit()
-                        mouseX, mouseY = check_for_click_on()
-                        # 任意点击，退回欢迎界面
-                        if (check_for_click_on()):
-                            gate=0.4 
-                    # 如果还有提示次数，询问其是否接受帮助
-                    else:
-                        # 刷新屏幕，以防止用户停在这里，观察不同点
-                        screen.fill(BLUE)
-                        # 显示是否需要提示
-                        screen.blit(pygame.image.load('more_time.png'), (0,0))
-                        
-                        check_for_quit()
-                        mouseX, mouseY = check_for_click_on()
-                        # 如果用户接受帮助，重玩本关，进入本关欢迎界面
-                        if(is_click_on_diff(mouseX, mouseY, [(557,673)])):
-                            againHelp -= 1   # 减少帮助次数
-                            if DEBUG:
-                                start_time = get_game_time(diffList)
-                            else:
-                                start_time = get_game_time(diffList) * 2 # 为其增加游戏时间
-                            gate = current_gate - 0.5      # 进入本关欢迎界面
-                            #print(gate)
-                        # 如果用户不接受帮助，点击cancle, 则退回至总欢迎界面
-                        elif(is_click_on_diff(mouseX, mouseY, [(722, 675)])):
-                            # go back to beginning
-                            display_game_over(screen)
-                            if (check_for_click_on()):
-                                gate=0.4
-                
-                # 如果时间还有，则正常进行游戏
-                else:
-                    ## 
-                    check_for_quit()   
-                    mouseX, mouseY = check_for_click_on()
-                    #如果点击点距离不同点比较近，则认为找到了不同点，标记圆圈
-                    if(is_click_on_diff(mouseX, mouseY, diffList)): 
-                        # 在点击点画圆
-                        pygame.draw.circle(screen, RED, (mouseX, mouseY), RADIUS, 1)
-                        #play_sound("right.wav")
-                        # 分数加一
-                        current_score += 1
-                        # if all area are marked, succeed
-                        # 如果全部不同点都找到，进入下一关
-                    if len(diffList)==0:
-                        gate = current_gate+0.5
-                        print(gate) 
-                
-                # 记录一次循环次数（一帧次数）
-                frame_count += 1
-                #play_sound('clock.wav')
-                # 按照FPS来设置一秒的循环次数
-                clock.tick(FPS)              
-                pygame.display.update()
-             # 第一关循环结束后，关闭钟表声音。   
-            clock_sound.stop()
-
+            run_gate(gate, total_diff_list)
         elif gate==1.5 :
-            current_gate = gate
-            diffList = [(635, 677)]
-            # set background
-            set_bg_color(screen, BLUE)
-            # add a picture as next button
-            screen.blit(next, (0, 0)) 
-            
-            # loop
-            while current_gate==gate:
-                # load some text
-                text = '第'+str(int(gate+0.5))+'关!'
-                output_text(text, screen, (476, 483))
-                # handle event
-                check_for_quit()
-                # 点击yes，设置gate+=0.5，进入下一关
-                mouseX, mouseY = check_for_click_on() # 获取点击鼠标时候的位置
-                if(is_click_on_diff(mouseX, mouseY, diffList)): # 判断该位置是否为yes按钮上
-                    gate= int(gate + 0.5)  
-                pygame.display.update() # 显示准备进入第一关的图片
+            run_gate_pre(gate)
         ## 进入第一关
         elif gate==2 :
-            ## 初始化设置
-            # 初始化分数
-            current_gate = gate
-            current_score = 0
-            # 初始化游戏时间
-            frame_count = 0
-            # 不同点数据
-            diffList = [(105, 202), (368, 108), (712, 75),
-                        (82, 340), (398, 397), (711, 492), 
-                        (108, 715), (448, 658), (712, 232)]
-            diffList = get_diffList(diffList)
-            # 第一关的比较图片
-            before = load_image(str(gate)+".jpg")
-            after = load_image(str(gate)+".1.jpg")
-            # 初始化背景为蓝色
-            set_bg_color(screen, BLUE)
-            # 添加比较图片到屏幕
-            screen.blit(before, (BEFORE_X, PIC_HEIGHT))
-            screen.blit(after, (START_X, START_Y))
-            # 设置北京音乐
-            clock_sound = pygame.mixer.Sound('clock.wav')
-            clock_sound.play(-1) # -1 for loop forever until stoppting call
-            # 设置本局游戏时间
-            if (againHelp == 1):
-                start_time = get_game_time(diffList)
-                
-            ## 游戏循环
-            while current_gate==gate:
-                ## 一些动画
-                # 显示得分动画
-                score = '得分: '+ str(current_score)
-                output_text(score, screen, (WIDTH-150, 20))
-                # 计算剩余时间
-                left_seconds = start_time - (frame_count // FPS) #获取剩余时间
-                if left_seconds < 0:
-                    left_seconds = 0
-                minutes = left_seconds // 60 
-                seconds = left_seconds % 60
-                # 显示剩余时间动画
-                timeLeft = "剩余时间: {0:02}:{1:02}".format(minutes, seconds)
-                output_text(timeLeft, screen, (WIDTH-500, 20))
-                # 计算并显示剩余不同点个数
-                diffLeft = '剩余个数: '+ str(len(diffList))
-                output_text(diffLeft, screen, (WIDTH-300, 20))
-                
-                ## 如果时间用完，显示帮助提示
-                if left_seconds == 0 :
-                    clock_sound.stop() # 此时应该关闭钟表声音
+            run_gate(gate, total_diff_list)
+        elif gate==2.5 :
+            play_win_animate()
 
-                    # 如果提示次数已经用完，游戏结束，任意点击回到欢迎界面
-                    if againHelp == 0: 
-                        # 显示输了
-                        text = '时间用完了，你输了！'
-                        output_text(text, screen, (CENTER_X, CENTER_Y))
-                        display_game_over(screen)
-                        # 处理退出以及点击事件
-                        check_for_quit()
-                        mouseX, mouseY = check_for_click_on()
-                        # 任意点击，退回欢迎界面
-                        if (check_for_click_on()):
-                            gate=0.4 
-                    # 如果还有提示次数，询问其是否接受帮助
-                    else:
-                        # 刷新屏幕，以防止用户停在这里，观察不同点
-                        screen.fill(BLUE)
-                        # 显示是否需要提示
-                        screen.blit(pygame.image.load('more_time.png'), (0,0))
-                        
-                        check_for_quit()
-                        mouseX, mouseY = check_for_click_on()
-                        # 如果用户接受帮助，重玩本关，进入本关欢迎界面
-                        if(is_click_on_diff(mouseX, mouseY, [(557,673)])):
-                            againHelp -= 1   # 减少帮助次数
-                            if DEBUG:
-                                start_time = get_game_time(diffList)
-                            else:
-                                start_time = get_game_time(diffList) * 2 # 为其增加游戏时间
-                            gate=current_gate-0.5         # 进入本关欢迎界面
-                        # 如果用户不接受帮助，点击cancle, 则退回至总欢迎界面
-                        elif(is_click_on_diff(mouseX, mouseY, [(722, 675)])):
-                            # go back to beginning
-                            display_game_over(screen)
-                            if (check_for_click_on()):
-                                gate=0.4
-                
-                # 如果时间还有，则正常进行游戏
-                else:
-                    ## 
-                    check_for_quit()   
-                    mouseX, mouseY = check_for_click_on()
-                    #如果点击点距离不同点比较近，则认为找到了不同点，标记圆圈
-                    if(is_click_on_diff(mouseX, mouseY, diffList)): 
-                        # 在点击点画圆
-                        pygame.draw.circle(screen, RED, (mouseX, mouseY), RADIUS, 1)
-                        #play_sound("right.wav")
-                        # 分数加一
-                        current_score += 1
-                        # if all area are marked, succeed
-                        # 如果全部不同点都找到，进入下一关
-                        if len(diffList)==0:
-                            gate = int(current_gate + 0.5) 
-                
-                # 记录一次循环次数（一帧次数）
-                frame_count += 1
-                #play_sound('clock.wav')
-                # 按照FPS来设置一秒的循环次数
-                clock.tick(FPS)              
-                pygame.display.update()
-             # 第一关循环结束后，关闭钟表声音。   
-            clock_sound.stop()
+def main():
+    run_game()
+    #play_win_animate()
 
-
-def main():    
-    runGame()
-
+## 程序入口
 if __name__ == '__main__':
     main()
